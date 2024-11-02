@@ -130,33 +130,47 @@ st.write(f"Selected Year: {selected_year}, Month: {selected_month}, Week: {selec
 
 
 if st.button('Forecast Price'):
-    # Create a DataFrame for the future input
-    future_data = pd.DataFrame({
-        'Selected Retail Average Price': [float(selected_r_price)],  # Convert to float
-        'Year': [int(selected_year)],                   # Convert to int
-        'Month': [int(selected_month)],                 # Convert to int
-        'Week': [int(selected_week)],                   # Convert to int
-        'Division': [selected_division],
-        'District': [selected_district],
-        'Upazila': [selected_upazila],
-        'Market Name': [selected_market_name]
-    })
+    # Filter the dataset based on user inputs
+    historical_data = data_cleaned_iqr[
+        (data_cleaned_iqr['Commodity Group'] == selected_commodity) &
+        (data_cleaned_iqr['Division'] == selected_division) &
+        (data_cleaned_iqr['District'] == selected_district) &
+        (data_cleaned_iqr['Upazila'] == selected_upazila)
+    ]
+    
+    # Check if there's enough historical data
+    if not historical_data.empty:
+        # Calculate the most recent 'W Average Price'
+        w_average_price = historical_data['W Average Price'].mean()  # Average over the filtered data
+        # Alternatively, you could take the most recent price
+        # w_average_price = historical_data['W Average Price'].iloc[-1] 
+        
+        # Create a DataFrame for future input
+        future_data = pd.DataFrame({
+            'W Average Price': [w_average_price],
+            'Year': [int(selected_year)],
+            'Month': [int(selected_month)],
+            'Week': [int(selected_week)],
+            'Division': [selected_division],
+            'District': [selected_district],
+            'Upazila': [selected_upazila],
+            'Market Name': [selected_market_name]
+        })
+    else:
+        st.error("No historical data found for the selected location and commodity.")
+        return
 
     # Display future data for debugging
     st.write("Future Data for Prediction:")
     st.write(future_data)
-    st.write(future_data.dtypes)
 
-    # Check for NaN values
-    if future_data.isnull().any().any():
-        st.error("Input data contains NaN values. Please check your inputs.")
-    else:
-        # Ensure the correct types for the DataFrame
-        try:
-            forecast_price = selected_model.predict(future_data)
-            st.success(f"Forecasted Price: {forecast_price[0]:.2f}")
-        except Exception as e:
-            st.error(f"Error predicting price: {str(e)}")
+    # Prediction logic remains unchanged
+    try:
+        forecast_price = selected_model.predict(future_data)
+        st.success(f"Forecasted Price: {forecast_price[0]:.2f}")
+    except Exception as e:
+        st.error(f"Error predicting price: {str(e)}")
+
 
 
 # Expander for displaying metrics and plots
