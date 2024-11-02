@@ -9,14 +9,16 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 import datetime
+from datetime import datetime as dt
+import folium
+from streamlit_folium import st_folium
+from geopy.geocoders import Nominatim
 
 # Load the CSV data into a pandas DataFrame
 data = pd.read_csv('Data/Combined Dataset.csv')
 
 # Preprocess the data (e.g., handle missing values, encode categorical variables)
 data = data.dropna()
-
-# Preprocess the data
 data.dropna(subset=['R Average Price', 'W Average Price'], inplace=True)
 
 # Remove commas from the 'R Average Price' and 'W Average Price' columns
@@ -109,18 +111,18 @@ selected_week = selected_date.isocalendar()[1]  # ISO week number
 
 # Input for Wheat Average Price
 selected_w_price = st.number_input('Enter Retail Average Price:', min_value=0.0, step=0.01)
-
-# Create cascading dropdowns for Division, District, Upazila, and Market Name
-division = st.selectbox('Select Division:', data['Division'].unique())
-districts = data[data['Division'] == division]['District'].unique()
-district = st.selectbox('Select District:', districts)
-upazilas = data[data['District'] == district]['Upazila'].unique()
-upazila = st.selectbox('Select Upazila:', upazilas)
-markets = data[data['Upazila'] == upazila]['Market Name'].unique()
-market_name = st.selectbox('Select Market Name:', markets)
+selected_division = st.selectbox('Select Division:', data['Division'].unique())
+selected_district = st.selectbox('Select District:', data['District'].unique())
+selected_upazila = st.selectbox('Select Upazila:', data['Upazila'].unique())
+selected_market_name = st.selectbox('Select Market Name:', data['Market Name'].unique())
 
 # Display selected values
 st.write(f"Selected Year: {selected_year}, Month: {selected_month}, Week: {selected_week}")
+
+# Create a map instance
+geolocator = Nominatim(user_agent="myGeocoder")
+map_center = [23.685, 90.3563]  # Center of Bangladesh, adjust as needed
+m = folium.Map(location=map_center, zoom_start=6)
 
 if st.button('Forecast Price'):
     # Create a DataFrame for the future input
@@ -129,10 +131,10 @@ if st.button('Forecast Price'):
         'Year': [selected_year],
         'Month': [selected_month],
         'Week': [selected_week],
-        'Division': [division],
-        'District': [district],
-        'Upazila': [upazila],
-        'Market Name': [market_name]
+        'Division': [selected_division],
+        'District': [selected_district],
+        'Upazila': [selected_upazila],
+        'Market Name': [selected_market_name]
     })
 
     # Ensure the correct types for the DataFrame
@@ -142,6 +144,19 @@ if st.button('Forecast Price'):
     try:
         forecast_price = selected_model.predict(future_data)
         st.success(f"Forecasted Price: {forecast_price[0]:.2f}")
+
+        # Get location from user inputs to add marker on the map
+        location = geolocator.geocode(f"{selected_upazila}, {selected_district}, {selected_division}, Bangladesh")
+        if location:
+            folium.Marker(
+                location=[location.latitude, location.longitude],
+                popup=f"Forecasted Price: {forecast_price[0]:.2f}",
+                icon=folium.Icon(color='blue')
+            ).add_to(m)
+            st_folium(m, width=700)
+        else:
+            st.error("Location not found for the marker.")
+
     except Exception as e:
         st.error(f"Error predicting price: {str(e)}")
 
