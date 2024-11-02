@@ -9,6 +9,8 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 import datetime
+from datetime import datetime as dt
+
 # Load the CSV data into a pandas DataFrame
 data = pd.read_csv('Data/Combined Dataset.csv')
 
@@ -100,16 +102,21 @@ selected_commodity = st.selectbox("Select Commodity:", commodity_names)
 # Get the corresponding model for the selected commodity
 selected_model = model_dict[selected_commodity]
 
-# User inputs for prediction
-selected_w_price = st.number_input('Enter Retail Average Price:', min_value=0.0, step=0.01)
-current_year = datetime.datetime.now().year
-selected_year = st.number_input('Enter Year:', value=current_year, min_value=2000, max_value=current_year)
-selected_month = st.selectbox('Select Month:', data['Month'].unique())
-selected_week = st.number_input('Enter Week:', min_value=1, max_value=52, value=1)  # Weeks range from 1 to 52
+# User input for prediction using date input
+selected_date = st.date_input("Select Date:", value=datetime.date.today())
+selected_year = selected_date.year
+selected_month = selected_date.month
+selected_week = selected_date.isocalendar()[1]  # ISO week number
+
+# Input for Wheat Average Price
+selected_w_price = st.number_input('Enter Wheat Average Price:', min_value=0.0, step=0.01)
 selected_division = st.selectbox('Select Division:', data['Division'].unique())
 selected_district = st.selectbox('Select District:', data['District'].unique())
 selected_upazila = st.selectbox('Select Upazila:', data['Upazila'].unique())
 selected_market_name = st.selectbox('Select Market Name:', data['Market Name'].unique())
+
+# Display selected values
+st.write(f"Selected Year: {selected_year}, Month: {selected_month}, Week: {selected_week}")
 
 if st.button('Forecast Price'):
     # Create a DataFrame for the future input
