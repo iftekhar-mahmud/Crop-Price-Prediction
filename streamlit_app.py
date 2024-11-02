@@ -13,7 +13,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 # Load the CSV data into a pandas DataFrame
-data = pd.read_csv('/content/drive/MyDrive/FYDP/Dataset/Combined Dataset.csv')
+data = pd.read_csv('Data/Combined Dataset.csv')
 
 # Preprocess the data
 data = data.dropna()
