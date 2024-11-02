@@ -1,5 +1,5 @@
 import streamlit as st
 
-st.title('🎈 App Name')
+st.title('Crop Price Prediction')
 
-st.write('Hello world!')
+st.write('Website Created by Iftekhar Mahmud')
