@@ -13,7 +13,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 # Load the CSV data into a pandas DataFrame
-data = pd.read_csv('Data/Combined Dataset.csv')
+data = pd.read_csv('/content/drive/MyDrive/FYDP/Dataset/Combined Dataset.csv')
 
 # Preprocess the data
 data.dropna(subset=['R Average Price', 'W Average Price'], inplace=True)
@@ -99,15 +99,16 @@ for name, model in models.items():
     # Display model metrics
     st.write(f"{name}: R-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}")
 
-    # Plotting Actual vs Predicted
-    plt.figure(figsize=(8, 6))
-    plt.scatter(y_test, y_pred, color='blue')
-    plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')
-    plt.xlabel('Actual Prices')
-    plt.ylabel('Predicted Prices')
-    plt.title(f'{name} - Actual vs Predicted Prices\nR-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}')
-    plt.grid(True)
-    st.pyplot(plt)
+    # Plotting Actual vs Predicted within an expander
+    with st.expander(f"{name} - Actual vs Predicted Prices", expanded=False):
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y_test, y_pred, color='blue')
+        plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')
+        plt.xlabel('Actual Prices')
+        plt.ylabel('Predicted Prices')
+        plt.title(f'{name} - Actual vs Predicted Prices\nR-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}')
+        plt.grid(True)
+        st.pyplot(plt)
 
 # Forecasting for the future date
 if st.sidebar.button("Forecast Price"):
@@ -127,4 +128,3 @@ if st.sidebar.button("Forecast Price"):
     for name, model in models.items():
         forecast_price = model.predict(future_data)
         st.write(f"Forecasted Price for {commodity_name} in {future_year} (Week {future_week}): {forecast_price[0]:.2f} using {name}")
-
