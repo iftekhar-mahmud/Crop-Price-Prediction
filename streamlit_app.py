@@ -13,7 +13,7 @@ from datetime import datetime as dt
 from geopy.geocoders import Nominatim
 
 # Load the CSV data into a pandas DataFrame
-data = pd.read_csv('Data/Combined Dataset.csv')
+data = pd.read_csv('Data/CombinedDataset.csv')
 
 # Preprocess the data (e.g., handle missing values, encode categorical variables)
 data = data.dropna()
