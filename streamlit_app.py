@@ -65,21 +65,24 @@ if data.empty:
     st.error("No data available for the selected parameters.")
 else:
     target_column_name = 'R Average Price'  # replace with your actual target column name
-    predictors = ['W Average Price', 'Year', 'Month', 'Week', 'Division', 'District', 'Upazila', 'Market Name']
-    
     # Define predictors and target variable
-    X = data[predictors]
-    y = data[target_column_name]
+predictors = ['W Average Price', 'Year', 'Month', 'Week', 'Division', 'District', 'Upazila', 'Market Name']
+X = data[predictors]
+y = data[target_column_name]
 
-    st.write("Shape of X:", X.shape)
-    st.write("Shape of y:", y.shape)
-
-    # Check for missing values
-    st.write("Missing values in X:", X.isnull().sum())
-    st.write("Missing values in y:", y.isnull().sum())
+# Check for and handle missing values
+if X.isnull().sum().any() or y.isnull().sum() > 0:
+    st.error("Missing values found in the data. Please check your input.")
+else:
+    # One-hot encode categorical features if necessary
+    X = pd.get_dummies(X, drop_first=True)
 
     # Split data for training and testing
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Display shapes
+    st.write("Shape of X_train:", X_train.shape)
+    st.write("Shape of X_test:", X_test.shape)
 
     # Dictionary of regression models
     models = {
