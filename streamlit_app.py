@@ -128,8 +128,7 @@ selected_market_name = st.selectbox('Select Market Name:', markets)
 # Display selected values
 st.write(f"Selected Year: {selected_year}, Month: {selected_month}, Week: {selected_week}")
 
-if st.button('Forecast Price'):
-    ## Forecasting price button
+
 if st.button('Forecast Price'):
     # Create a DataFrame for the future input
     future_data = pd.DataFrame({
