@@ -30,11 +30,38 @@ upazila = st.sidebar.selectbox('Select Upazila', ['Bandarban Sadar', 'Barguna Sa
 
 # Initialize the preprocessor
 preprocessor = CropDataPreprocessor(commodity_name=commodity_name, district=district, division=division, upazila=upazila)
-data = preprocessor.load_data('https://raw.githubusercontent.com/iftekhar-mahmud/Crop-Price-Prediction/refs/heads/master/Data/Combined%20Dataset.csv')  # Load and preprocess data
+data = preprocessor.load_data('Data/Combined Dataset.csv')  # Load and preprocess data
 
+# Troubleshooting
 st.write("Data shape:", data.shape)
 st.write("First few rows of data:", data.head())
 
+target_column_name = 'Division'  # replace with your actual target column name
+X = data.drop(columns=[target_column_name])  
+y = data[target_column_name]
+
+st.write("Shape of X:", X.shape)
+st.write("Shape of y:", y.shape)
+
+st.write("Missing values in X:", X.isnull().sum())
+st.write("Missing values in y:", y.isnull().sum())
+
+import pandas as pd
+
+# Create a simple DataFrame for testing
+test_data = pd.DataFrame({
+    'feature1': [1, 2, 3, 4, 5],
+    'feature2': [5, 4, 3, 2, 1],
+    'target': [0, 1, 0, 1, 0]
+})
+
+X_test = test_data.drop(columns=['target'])
+y_test = test_data['target']
+
+st.write("Test X shape:", X_test.shape)
+st.write("Test y shape:", y_test.shape)
+
+X_train, X_test_split, y_train, y_test_split = train_test_split(X_test, y_test, test_size=0.2, random_state=42)
 
 
 # Define predictors and target variable
