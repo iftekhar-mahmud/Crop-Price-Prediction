@@ -149,14 +149,12 @@ with st.expander("Model Metrics and Plots"):
 # Initialize geolocator
 geolocator = Nominatim(user_agent="crop_price_prediction_app")
 
-# Convert the user's selected location into latitude and longitude
-location = None
+# Geolocation
 try:
     location = geolocator.geocode(f"{selected_division}, {selected_district}, {selected_upazila}", exactly_one=True)
+    if location:
+        st.map(pd.DataFrame({'lat': [location.latitude], 'lon': [location.longitude]}))
+    else:
+        st.error("Location could not be found. Please check your inputs.")
 except Exception as e:
     st.error(f"Error occurred while fetching location: {str(e)}")
-
-if location:
-    st.map(pd.DataFrame({'lat': [location.latitude], 'lon': [location.longitude]}))
-else:
-    st.error("Location could not be found. Please check your inputs.")
