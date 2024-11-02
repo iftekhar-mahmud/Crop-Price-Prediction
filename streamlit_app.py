@@ -109,7 +109,7 @@ selected_month = selected_date.month
 selected_week = selected_date.isocalendar()[1]  # ISO week number
 
 # Input for Wheat Average Price
-selected_w_price = st.number_input('Enter Wheat Average Price:', min_value=0.0, step=0.01)
+selected_w_price = st.number_input('Enter Retail Average Price:', min_value=0.0, step=0.01)
 selected_division = st.selectbox('Select Division:', data['Division'].unique())
 selected_district = st.selectbox('Select District:', data['District'].unique())
 selected_upazila = st.selectbox('Select Upazila:', data['Upazila'].unique())
