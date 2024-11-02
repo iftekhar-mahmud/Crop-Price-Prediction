@@ -1,45 +1,71 @@
 import streamlit as st
 import pandas as pd
-import geopandas as gpd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.svm import SVR
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder
 import numpy as np
 import matplotlib.pyplot as plt
-import folium
-from streamlit_folium import folium_static
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVR
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
-# Crop Data Preprocessor class
-class CropDataPreprocessor:
-    def __init__(self, commodity_name=None, district=None, division=None, upazila=None):
-        self.commodity_name = commodity_name
-        self.district = district
-        self.division = division
-        self.upazila = upazila
+# Load the CSV data into a pandas DataFrame
+data = pd.read_csv('/content/drive/MyDrive/FYDP/Dataset/Combined Dataset.csv')
 
-    def load_data(self, path):
-        data = pd.read_csv(path)
-        '''
-        if self.commodity_name:
-            data = data[data['Commodity Name'] == self.commodity_name]
-        if self.district:
-            data = data[data['District'] == self.district]
-        if self.division:
-            data = data[data['Division'] == self.division]
-        if self.upazila:
-            data = data[data['Upazila'] == self.upazila]
-            '''
-        return data
+# Preprocess the data
+data = data.dropna()
+data.dropna(subset=['R Average Price', 'W Average Price'], inplace=True)
 
-# Initialize map with folium and center on Bangladesh
-def create_map():
-    return folium.Map(location=[23.685, 90.3563], zoom_start=6) 
+# Remove commas from the 'R Average Price' and 'W Average Price' columns
+data['R Average Price'] = data['R Average Price'].str.replace(',', '')
+data['W Average Price'] = data['W Average Price'].str.replace(',', '')
+
+# Convert the 'R Average Price' and 'W Average Price' columns to numeric
+data['R Average Price'] = pd.to_numeric(data['R Average Price'], errors='coerce')
+data['W Average Price'] = pd.to_numeric(data['W Average Price'], errors='coerce')
+
+# Handle NaN values using interpolation
+data['R Average Price'].interpolate(method='linear', inplace=True)
+data['W Average Price'].interpolate(method='linear', inplace=True)
+
+# Get the unique commodity names
+commodity_names = data['Commodity Group'].unique()
+
+# Data Cleaning: Detect and remove outliers using Interquartile Range (IQR)
+Q1 = data.select_dtypes(include=np.number).quantile(0.25)
+Q3 = data.select_dtypes(include=np.number).quantile(0.75)
+IQR = Q3 - Q1
+data_cleaned_iqr = data[~((data.select_dtypes(include=np.number) < (Q1 - 1.5 * IQR)) | (data.select_dtypes(include=np.number) > (Q3 + 1.5 * IQR))).any(axis=1)]
+
+# Define the target variable and predictor variables
+target = 'R Average Price'
+predictors = ['W Average Price', 'Year', 'Month', 'Week', 'Division', 'District', 'Upazila', 'Market Name']
+
+# Encode categorical variables
+categorical_cols = ['Month', 'Division', 'District', 'Upazila', 'Market Name']
+numeric_cols = [col for col in predictors if col not in categorical_cols]
+
+categorical_transformer = OneHotEncoder(handle_unknown='ignore')
+numeric_transformer = 'passthrough'
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('cat', categorical_transformer, categorical_cols),
+        ('num', numeric_transformer, numeric_cols)
+    ])
+
+# Dictionary of regression models
+models = {
+    'Linear Regression': Pipeline([('preprocessor', preprocessor), ('model', LinearRegression())]),
+    'Ridge Regression': Pipeline([('preprocessor', preprocessor), ('model', Ridge())]),
+    'Lasso Regression': Pipeline([('preprocessor', preprocessor), ('model', Lasso())]),
+    'Decision Tree Regression': Pipeline([('preprocessor', preprocessor), ('model', DecisionTreeRegressor())]),
+    'Random Forest Regression': Pipeline([('preprocessor', preprocessor), ('model', RandomForestRegressor())]),
+    'Support Vector Regression': Pipeline([('preprocessor', preprocessor), ('model', SVR())])
+}
 
 # Streamlit app starts here
 st.title('Crop Price Prediction')
@@ -47,81 +73,44 @@ st.write('Website Created by Iftekhar Mahmud')
 st.markdown("Enter crop and location details to predict prices.")
 
 # Sidebar inputs for user selection
-commodity_name = st.sidebar.selectbox('Select Commodity', ['Tomato', 'Potato', 'Rice', 'Onion', 'Oil Seed', 'Wheat'])
-district = st.sidebar.selectbox('Select District', ['Bandarban', 'Barguna', 'Barisal', 'Chattogram', 'Chuadanga', 'Comilla', 'Dinajpur', 'Faridpur', 'Gaibandha', 'Jhalakathi', 'Jhenaidah', 'Khagrachhari', 'Kurigram', 'Lakshmipur', 'Manikganj', 'Narail', 'Patuakhali', 'Rangamati', 'Shariatpur', 'Sirajganj', 'Thakurgaon'])
-division = st.sidebar.selectbox('Select Division', ['Barisal', 'Chattagram', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur'])
-upazila = st.sidebar.selectbox('Select Upazila', ['Bandarban Sadar', 'Barguna Sadar', 'Barisal Sadar', 'Chattogram City Corporation', 'Chuadanga Sadar', 'Comilla Sadar', 'Dinajpur Sadar', 'Faridpur Sadar', 'Gaibandha Sadar', 'Jhalakathi Sadar', 'Jhenaidah Sadar', 'Khagrachhari Sadar', 'Kurigram Sadar', 'Lakshmipur Sadar', 'Manikganj Sadar', 'Narail Sadar', 'Patuakhali Sadar', 'Rangamati Sadar', 'Shariatpur Sadar', 'Sirajganj Sadar', 'Thakurgaon Sadar'])
+commodity_name = st.sidebar.selectbox('Select Commodity', commodity_names)
+district = st.sidebar.selectbox('Select District', data['District'].unique())
+division = st.sidebar.selectbox('Select Division', data['Division'].unique())
+upazila = st.sidebar.selectbox('Select Upazila', data['Upazila'].unique())
 
-# Initialize the preprocessor
-preprocessor = CropDataPreprocessor(commodity_name=commodity_name, district=district, division=division, upazila=upazila)
-data = preprocessor.load_data('Data/Combined Dataset.csv')  # Load and preprocess data
+# Filter data for the selected commodity
+commodity_data = data_cleaned_iqr[data_cleaned_iqr['Commodity Group'] == commodity_name]
 
-# Troubleshooting
-st.write("Data shape:", data.shape)
-st.write("First few rows of data:", data.head())
+# Define the target and predictors
+X = commodity_data[predictors]
+y = commodity_data[target]
 
-# Ensure that data is not empty
-if data.empty:
-    st.error("No data available for the selected parameters.")
-else:
-    target_column_name = 'R Average Price'  # replace with your actual target column name
-    # Define predictors and target variable
-predictors = ['W Average Price', 'Year', 'Month', 'Week', 'Division', 'District', 'Upazila', 'Market Name']
-X = data[predictors]
-y = data[target_column_name]
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Check for and handle missing values
-if X.isnull().sum().any() or y.isnull().sum() > 0:
-    st.error("Missing values found in the data. Please check your input.")
-else:
-    # One-hot encode categorical features if necessary
-    X = pd.get_dummies(X, drop_first=True)
+# Loop through each model and fit, predict, and evaluate
+for name, model in models.items():
+    # Fit the model
+    model.fit(X_train, y_train)
 
-    # Split data for training and testing
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Predict on the test set
+    y_pred = model.predict(X_test)
 
-    # Display shapes
-    st.write("Shape of X_train:", X_train.shape)
-    st.write("Shape of X_test:", X_test.shape)
+    # Calculate metrics
+    r2 = r2_score(y_test, y_pred)
+    mse = mean_squared_error(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
 
-    # Dictionary of regression models
-    models = {
-        'Linear Regression': Pipeline([('model', LinearRegression())]),
-        'Ridge Regression': Pipeline([('model', Ridge())]),
-        'Lasso Regression': Pipeline([('model', Lasso())]),
-        'Decision Tree Regression': Pipeline([('model', DecisionTreeRegressor())]),
-        'Random Forest Regression': Pipeline([('model', RandomForestRegressor())]),
-        'Support Vector Regression': Pipeline([('model', SVR())])
-    }
+    # Display model metrics
+    st.write(f"{name}: R-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}")
 
-    # Display metrics for each model
-    for name, model in models.items():
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        r2 = r2_score(y_test, y_pred)
-        mse = mean_squared_error(y_test, y_pred)
-        mae = mean_absolute_error(y_test, y_pred)
+    # Plotting Actual vs Predicted
+    plt.figure(figsize=(8, 6))
+    plt.scatter(y_test, y_pred, color='blue')
+    plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')
+    plt.xlabel('Actual Prices')
+    plt.ylabel('Predicted Prices')
+    plt.title(f'{name} - Actual vs Predicted Prices\nR-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}')
+    plt.grid(True)
+    st.pyplot(plt)
 
-        # Display model metrics
-        st.write(f"{name}: R-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}")
-
-        # Plotting Actual vs Predicted
-        fig, ax = plt.subplots()
-        ax.scatter(y_test, y_pred, color='blue')
-        ax.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')
-        ax.set_xlabel('Actual')
-        ax.set_ylabel('Predicted')
-        ax.set_title(f'{name} - Actual vs Predicted')
-        st.pyplot(fig)
-
-    # Create and display map with folium
-    map_bd = create_map()
-    # Add marker for the selected location
-    folium.Marker(
-        location=[23.685, 90.3563],  # Update with actual lat, long if available
-        popup=f"{upazila}, {district}, {division}",
-        tooltip="Selected Location"
-    ).add_to(map_bd)
-
-    # Display the map in Streamlit
-    folium_static(map_bd)
