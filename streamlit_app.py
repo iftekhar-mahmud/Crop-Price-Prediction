@@ -101,7 +101,7 @@ selected_commodity = st.selectbox("Select Commodity:", commodity_names)
 selected_model = model_dict[selected_commodity]
 
 # User inputs for prediction
-selected_w_price = st.number_input('Enter Wheat Average Price:')
+selected_w_price = st.number_input('Enter Average Price:')
 selected_year = st.number_input('Enter Year:')
 selected_month = st.selectbox('Select Month:', data['Month'].unique())
 selected_week = st.number_input('Enter Week:')
