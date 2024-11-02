@@ -23,13 +23,14 @@ st.markdown("Enter crop and location details to predict prices.")
 
 # Sidebar inputs for user selection
 commodity_name = st.sidebar.selectbox('Select Commodity', ['Tomato', 'Potato', 'Rice', 'Onion', 'Oil Seed', 'Wheat'])
-district = st.sidebar.selectbox('Select District', ['Bandarban', 'Barguna', 'Barisal', 'Chattogram', ...])  # add more districts as needed
+district = st.sidebar.selectbox('Select District', ['Bandarban', 'Barguna', 'Barisal', 'Chattogram', 'Chuadanga', 'Comilla', 'Dinajpur', 'Faridpur', 'Gaibandha', 'Jhalakathi', 'Jhenaidah', 'Khagrachhari', 'Kurigram', 'Lakshmipur', 'Manikganj', 'Narail', 'Patuakhali', 'Rangamati', 'Shariatpur', 'Sirajganj', 'Thakurgaon'])
 division = st.sidebar.selectbox('Select Division', ['Barisal', 'Chattagram', 'Dhaka', 'Khulna', 'Rajshahi', 'Rangpur'])
-upazila = st.sidebar.selectbox('Select Upazila', ['Bandarban Sadar', 'Barguna Sadar', 'Barisal Sadar', ...])  # add more upazilas as needed
+upazila = st.sidebar.selectbox('Select Upazila', ['Bandarban Sadar', 'Barguna Sadar', 'Barisal Sadar', 'Chattogram City Corporation', 'Chuadanga Sadar', 'Comilla Sadar', 'Dinajpur Sadar', 'Faridpur Sadar', 'Gaibandha Sadar', 'Jhalakathi Sadar', 'Jhenaidah Sadar', 'Khagrachhari Sadar', 'Kurigram Sadar', 'Lakshmipur Sadar', 'Manikganj Sadar', 'Narail Sadar', 'Patuakhali Sadar', 'Rangamati Sadar', 'Shariatpur Sadar', 'Sirajganj Sadar', 'Thakurgaon Sadar'])
+
 
 # Initialize the preprocessor
 preprocessor = CropDataPreprocessor(commodity_name=commodity_name, district=district, division=division, upazila=upazila)
-data = preprocessor.load_data('data/combined_data.csv')  # Load and preprocess data
+data = preprocessor.load_data('https://raw.githubusercontent.com/iftekhar-mahmud/Crop-Price-Prediction/refs/heads/master/Data/Combined%20Dataset.csv')  # Load and preprocess data
 
 # Define predictors and target variable
 target = 'R Average Price'
