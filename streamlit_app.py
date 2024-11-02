@@ -59,6 +59,11 @@ data = preprocessor.load_data('Data/Combined Dataset.csv')  # Load and preproces
 # Troubleshooting
 st.write("Data shape:", data.shape)
 st.write("First few rows of data:", data.head())
+st.write("Available columns in data:", data.columns.tolist())
+st.write("Data types in data:", data.dtypes)
+st.write("Filtered data shape:", data.shape)
+st.write("Missing values in X:", X.isnull().sum())
+
 
 # Ensure that data is not empty
 if data.empty:
