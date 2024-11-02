@@ -25,7 +25,7 @@ class CropDataPreprocessor:
 
     def load_data(self, path):
         data = pd.read_csv(path)
-        # Filter data based on user selection
+        '''
         if self.commodity_name:
             data = data[data['Commodity Name'] == self.commodity_name]
         if self.district:
@@ -34,11 +34,12 @@ class CropDataPreprocessor:
             data = data[data['Division'] == self.division]
         if self.upazila:
             data = data[data['Upazila'] == self.upazila]
+            '''
         return data
 
 # Initialize map with folium and center on Bangladesh
 def create_map():
-    return folium.Map(location=[23.685, 90.3563], zoom_start=6)
+    return folium.Map(location=[23.685, 90.3563], zoom_start=6) 
 
 # Streamlit app starts here
 st.title('Crop Price Prediction')
@@ -65,62 +66,62 @@ if data.empty:
 else:
     target_column_name = 'R Average Price'  # replace with your actual target column name
     # Define predictors and target variable
-    predictors = ['W Average Price', 'Year', 'Month', 'Week', 'Division', 'District', 'Upazila', 'Market Name']
-    X = data[predictors]
-    y = data[target_column_name]
+predictors = ['W Average Price', 'Year', 'Month', 'Week', 'Division', 'District', 'Upazila', 'Market Name']
+X = data[predictors]
+y = data[target_column_name]
 
-    # Check for and handle missing values
-    if X.isnull().sum().any() or y.isnull().sum() > 0:
-        st.error("Missing values found in the data. Please check your input.")
-    else:
-        # One-hot encode categorical features if necessary
-        X = pd.get_dummies(X, drop_first=True)
+# Check for and handle missing values
+if X.isnull().sum().any() or y.isnull().sum() > 0:
+    st.error("Missing values found in the data. Please check your input.")
+else:
+    # One-hot encode categorical features if necessary
+    X = pd.get_dummies(X, drop_first=True)
 
-        # Split data for training and testing
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Split data for training and testing
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # Display shapes
-        st.write("Shape of X_train:", X_train.shape)
-        st.write("Shape of X_test:", X_test.shape)
+    # Display shapes
+    st.write("Shape of X_train:", X_train.shape)
+    st.write("Shape of X_test:", X_test.shape)
 
-        # Dictionary of regression models
-        models = {
-            'Linear Regression': Pipeline([('model', LinearRegression())]),
-            'Ridge Regression': Pipeline([('model', Ridge())]),
-            'Lasso Regression': Pipeline([('model', Lasso())]),
-            'Decision Tree Regression': Pipeline([('model', DecisionTreeRegressor())]),
-            'Random Forest Regression': Pipeline([('model', RandomForestRegressor())]),
-            'Support Vector Regression': Pipeline([('model', SVR())])
-        }
+    # Dictionary of regression models
+    models = {
+        'Linear Regression': Pipeline([('model', LinearRegression())]),
+        'Ridge Regression': Pipeline([('model', Ridge())]),
+        'Lasso Regression': Pipeline([('model', Lasso())]),
+        'Decision Tree Regression': Pipeline([('model', DecisionTreeRegressor())]),
+        'Random Forest Regression': Pipeline([('model', RandomForestRegressor())]),
+        'Support Vector Regression': Pipeline([('model', SVR())])
+    }
 
-        # Display metrics for each model
-        for name, model in models.items():
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
-            r2 = r2_score(y_test, y_pred)
-            mse = mean_squared_error(y_test, y_pred)
-            mae = mean_absolute_error(y_test, y_pred)
+    # Display metrics for each model
+    for name, model in models.items():
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        r2 = r2_score(y_test, y_pred)
+        mse = mean_squared_error(y_test, y_pred)
+        mae = mean_absolute_error(y_test, y_pred)
 
-            # Display model metrics
-            st.write(f"{name}: R-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}")
+        # Display model metrics
+        st.write(f"{name}: R-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}")
 
-            # Plotting Actual vs Predicted
-            fig, ax = plt.subplots()
-            ax.scatter(y_test, y_pred, color='blue')
-            ax.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')
-            ax.set_xlabel('Actual')
-            ax.set_ylabel('Predicted')
-            ax.set_title(f'{name} - Actual vs Predicted')
-            st.pyplot(fig)
+        # Plotting Actual vs Predicted
+        fig, ax = plt.subplots()
+        ax.scatter(y_test, y_pred, color='blue')
+        ax.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')
+        ax.set_xlabel('Actual')
+        ax.set_ylabel('Predicted')
+        ax.set_title(f'{name} - Actual vs Predicted')
+        st.pyplot(fig)
 
-        # Create and display map with folium
-        map_bd = create_map()
-        # Add marker for the selected location
-        folium.Marker(
-            location=[23.685, 90.3563],  # Update with actual lat, long if available
-            popup=f"{upazila}, {district}, {division}",
-            tooltip="Selected Location"
-        ).add_to(map_bd)
+    # Create and display map with folium
+    map_bd = create_map()
+    # Add marker for the selected location
+    folium.Marker(
+        location=[23.685, 90.3563],  # Update with actual lat, long if available
+        popup=f"{upazila}, {district}, {division}",
+        tooltip="Selected Location"
+    ).add_to(map_bd)
 
-        # Display the map in Streamlit
-        folium_static(map_bd)
+    # Display the map in Streamlit
+    folium_static(map_bd)
