@@ -30,7 +30,12 @@ upazila = st.sidebar.selectbox('Select Upazila', ['Bandarban Sadar', 'Barguna Sa
 
 # Initialize the preprocessor
 preprocessor = CropDataPreprocessor(commodity_name=commodity_name, district=district, division=division, upazila=upazila)
-data = preprocessor.load_data('Data/Combined Dataset.csv')  # Load and preprocess data
+data = preprocessor.load_data('https://raw.githubusercontent.com/iftekhar-mahmud/Crop-Price-Prediction/refs/heads/master/Data/Combined%20Dataset.csv')  # Load and preprocess data
+
+st.write("Data shape:", data.shape)
+st.write("First few rows of data:", data.head())
+
+
 
 # Define predictors and target variable
 target = 'R Average Price'
