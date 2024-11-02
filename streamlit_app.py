@@ -156,20 +156,20 @@ if st.button('Forecast Price'):
             'Upazila': [selected_upazila],
             'Market Name': [selected_market_name]
         })
+
+        # Display future data for debugging
+        st.write("Future Data for Prediction:")
+        st.write(future_data)
+
+        # Prediction logic remains unchanged
+        try:
+            forecast_price = selected_model.predict(future_data)
+            st.success(f"Forecasted Price: {forecast_price[0]:.2f}")
+        except Exception as e:
+            st.error(f"Error predicting price: {str(e)}")
     else:
         st.error("No historical data found for the selected location and commodity.")
-        return
 
-    # Display future data for debugging
-    st.write("Future Data for Prediction:")
-    st.write(future_data)
-
-    # Prediction logic remains unchanged
-    try:
-        forecast_price = selected_model.predict(future_data)
-        st.success(f"Forecasted Price: {forecast_price[0]:.2f}")
-    except Exception as e:
-        st.error(f"Error predicting price: {str(e)}")
 
 
 
