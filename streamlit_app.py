@@ -108,7 +108,7 @@ selected_month = selected_date.month
 selected_week = selected_date.isocalendar()[1]  # ISO week number
 
 # Ensure initial selection to avoid KeyErrors
-selected_w_price = st.number_input('Enter Retail Average Price:', min_value=0.0, step=0.01)
+selected_r_price = st.number_input('Enter Retail Average Price:', min_value=0.0, step=0.01)
 
 # Division selection
 selected_division = st.selectbox('Select Division:', data['Division'].unique())
@@ -132,7 +132,7 @@ st.write(f"Selected Year: {selected_year}, Month: {selected_month}, Week: {selec
 if st.button('Forecast Price'):
     # Create a DataFrame for the future input
     future_data = pd.DataFrame({
-        'W Average Price': [float(selected_w_price)],  # Convert to float
+        'Selected Retail Average Price': [float(selected_r_price)],  # Convert to float
         'Year': [int(selected_year)],                   # Convert to int
         'Month': [int(selected_month)],                 # Convert to int
         'Week': [int(selected_week)],                   # Convert to int
