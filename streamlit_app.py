@@ -59,30 +59,24 @@ data = preprocessor.load_data('Data/Combined Dataset.csv')  # Load and preproces
 # Troubleshooting
 st.write("Data shape:", data.shape)
 st.write("First few rows of data:", data.head())
-st.write("Available columns in data:", data.columns.tolist())
-st.write("Data types in data:", data.dtypes)
-st.write("Filtered data shape:", data.shape)
-st.write("Missing values in X:", X.isnull().sum())
-
 
 # Ensure that data is not empty
 if data.empty:
     st.error("No data available for the selected parameters.")
 else:
     target_column_name = 'R Average Price'  # replace with your actual target column name
-    X = data.drop(columns=[target_column_name])  
+    predictors = ['W Average Price', 'Year', 'Month', 'Week', 'Division', 'District', 'Upazila', 'Market Name']
+    
+    # Define predictors and target variable
+    X = data[predictors]
     y = data[target_column_name]
 
     st.write("Shape of X:", X.shape)
     st.write("Shape of y:", y.shape)
 
+    # Check for missing values
     st.write("Missing values in X:", X.isnull().sum())
     st.write("Missing values in y:", y.isnull().sum())
-
-    # Define predictors and target variable
-    predictors = ['W Average Price', 'Year', 'Month', 'Week', 'Division', 'District', 'Upazila', 'Market Name']
-    X = data[predictors]
-    y = data[target_column_name]
 
     # Split data for training and testing
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
