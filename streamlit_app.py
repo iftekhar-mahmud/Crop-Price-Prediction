@@ -107,12 +107,23 @@ selected_year = selected_date.year
 selected_month = selected_date.month
 selected_week = selected_date.isocalendar()[1]  # ISO week number
 
-# Input for Wheat Average Price
+# Ensure initial selection to avoid KeyErrors
 selected_w_price = st.number_input('Enter Retail Average Price:', min_value=0.0, step=0.01)
+
+# Division selection
 selected_division = st.selectbox('Select Division:', data['Division'].unique())
-selected_district = st.selectbox('Select District:', data['District'].unique())
-selected_upazila = st.selectbox('Select Upazila:', data['Upazila'].unique())
-selected_market_name = st.selectbox('Select Market Name:', data['Market Name'].unique())
+
+# District selection based on selected Division
+districts = data[data['Division'] == selected_division]['District'].unique()
+selected_district = st.selectbox('Select District:', districts)
+
+# Upazila selection based on selected District
+upazilas = data[data['District'] == selected_district]['Upazila'].unique()
+selected_upazila = st.selectbox('Select Upazila:', upazilas)
+
+# Market Name selection based on selected Upazila
+markets = data[data['Upazila'] == selected_upazila]['Market Name'].unique()
+selected_market_name = st.selectbox('Select Market Name:', markets)
 
 # Display selected values
 st.write(f"Selected Year: {selected_year}, Month: {selected_month}, Week: {selected_week}")
@@ -145,6 +156,7 @@ if st.button('Forecast Price'):
 with st.expander("Model Metrics and Plots"):
     # You can add plots or metrics relevant to the selected commodity here.
     pass
+
 
 # Initialize geolocator
 geolocator = Nominatim(user_agent="crop_price_prediction_app")
