@@ -10,8 +10,6 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 import datetime
 from datetime import datetime as dt
-import folium
-from streamlit_folium import st_folium
 from geopy.geocoders import Nominatim
 
 # Load the CSV data into a pandas DataFrame
@@ -119,48 +117,41 @@ selected_market_name = st.selectbox('Select Market Name:', data['Market Name'].u
 # Display selected values
 st.write(f"Selected Year: {selected_year}, Month: {selected_month}, Week: {selected_week}")
 
-# Create a map instance
-geolocator = Nominatim(user_agent="myGeocoder")
-map_center = [23.685, 90.3563]  # Center of Bangladesh, adjust as needed
-m = folium.Map(location=map_center, zoom_start=6)
-
 if st.button('Forecast Price'):
     # Create a DataFrame for the future input
     future_data = pd.DataFrame({
-        'W Average Price': [selected_w_price],
-        'Year': [selected_year],
-        'Month': [selected_month],
-        'Week': [selected_week],
+        'W Average Price': [float(selected_w_price)],  # Convert to float
+        'Year': [int(selected_year)],                   # Convert to int
+        'Month': [int(selected_month)],                 # Convert to int
+        'Week': [int(selected_week)],                   # Convert to int
         'Division': [selected_division],
         'District': [selected_district],
         'Upazila': [selected_upazila],
         'Market Name': [selected_market_name]
     })
 
-    # Ensure the correct types for the DataFrame
-    future_data['W Average Price'] = pd.to_numeric(future_data['W Average Price'], errors='coerce')
-
-    # Predict
-    try:
-        forecast_price = selected_model.predict(future_data)
-        st.success(f"Forecasted Price: {forecast_price[0]:.2f}")
-
-        # Get location from user inputs to add marker on the map
-        location = geolocator.geocode(f"{selected_upazila}, {selected_district}, {selected_division}, Bangladesh")
-        if location:
-            folium.Marker(
-                location=[location.latitude, location.longitude],
-                popup=f"Forecasted Price: {forecast_price[0]:.2f}",
-                icon=folium.Icon(color='blue')
-            ).add_to(m)
-            st_folium(m, width=700)
-        else:
-            st.error("Location not found for the marker.")
-
-    except Exception as e:
-        st.error(f"Error predicting price: {str(e)}")
+    # Check for NaN values
+    if future_data.isnull().any().any():
+        st.error("Input data contains NaN values. Please check your inputs.")
+    else:
+        # Predict
+        try:
+            forecast_price = selected_model.predict(future_data)
+            st.success(f"Forecasted Price: {forecast_price[0]:.2f}")
+        except Exception as e:
+            st.error(f"Error predicting price: {str(e)}")
 
 # Expander for displaying metrics and plots
 with st.expander("Model Metrics and Plots"):
     # You can add plots or metrics relevant to the selected commodity here.
     pass
+
+# Initialize geolocator
+geolocator = Nominatim(user_agent="myGeocoder")
+
+# Convert the user's selected location into latitude and longitude
+location = geolocator.geocode(f"{selected_division}, {selected_district}, {selected_upazila}")
+if location:
+    st.map(pd.DataFrame({'lat': [location.latitude], 'lon': [location.longitude]}))
+else:
+    st.error("Location could not be found. Please check your inputs.")
