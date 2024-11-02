@@ -11,19 +11,33 @@ class CropDataPreprocessor(BaseEstimator, TransformerMixin):
         self.division = division
         self.upazila = upazila
 
-    def load_data(self, path):
-        # Load combined dataset
-        data = pd.read_csv(path)
-        # Apply filtering based on commodity, district, etc.
-        if self.commodity_name:
-            data = data[data['Commodity Name'] == self.commodity_name]
-        if self.district:
-            data = data[data['District'] == self.district]
-        if self.division:
-            data = data[data['Division'] == self.division]
-        if self.upazila:
-            data = data[data['Upazila'] == self.upazila]
-        return data
+    ddef load_data(self, path):
+    # Load combined dataset
+    data = pd.read_csv(path)
+    print("Initial data shape:", data.shape)  # Debug print
+    
+    # Print unique values for debugging
+    print("Unique commodities:", data['Commodity Name'].unique())
+    print("Unique districts:", data['District'].unique())
+    print("Unique divisions:", data['Division'].unique())
+    print("Unique upazilas:", data['Upazila'].unique())
+
+    # Apply filtering based on commodity, district, etc.
+    if self.commodity_name:
+        data = data[data['Commodity Name'] == self.commodity_name]
+        print("After filtering by commodity shape:", data.shape)  # Debug print
+    if self.district:
+        data = data[data['District'] == self.district]
+        print("After filtering by district shape:", data.shape)  # Debug print
+    if self.division:
+        data = data[data['Division'] == self.division]
+        print("After filtering by division shape:", data.shape)  # Debug print
+    if self.upazila:
+        data = data[data['Upazila'] == self.upazila]
+        print("After filtering by upazila shape:", data.shape)  # Debug print
+
+    return data
+
 
     def fit(self, X, y=None):
         return self
