@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
@@ -15,10 +12,21 @@ from sklearn.pipeline import Pipeline
 # Load the CSV data into a pandas DataFrame
 data = pd.read_csv('Data/Combined Dataset.csv')
 
+# Preprocess the data (e.g., handle missing values, encode categorical variables)
+data = data.dropna()
+
 # Preprocess the data
 data.dropna(subset=['R Average Price', 'W Average Price'], inplace=True)
-data['R Average Price'] = data['R Average Price'].str.replace(',', '').astype(float)
-data['W Average Price'] = data['W Average Price'].str.replace(',', '').astype(float)
+
+# Remove commas from the 'R Average Price' and 'W Average Price' columns
+data['R Average Price'] = data['R Average Price'].str.replace(',', '')
+data['W Average Price'] = data['W Average Price'].str.replace(',', '')
+
+# Convert the 'R Average Price' and 'W Average Price' columns to numeric
+data['R Average Price'] = pd.to_numeric(data['R Average Price'], errors='coerce')
+data['W Average Price'] = pd.to_numeric(data['W Average Price'], errors='coerce')
+
+# Handle NaN values using interpolation
 data['R Average Price'].interpolate(method='linear', inplace=True)
 data['W Average Price'].interpolate(method='linear', inplace=True)
 
@@ -48,83 +56,84 @@ preprocessor = ColumnTransformer(
         ('num', numeric_transformer, numeric_cols)
     ])
 
-# Dictionary of regression models
-models = {
-    'Linear Regression': Pipeline([('preprocessor', preprocessor), ('model', LinearRegression())]),
-    'Ridge Regression': Pipeline([('preprocessor', preprocessor), ('model', Ridge())]),
-    'Lasso Regression': Pipeline([('preprocessor', preprocessor), ('model', Lasso())]),
-    'Decision Tree Regression': Pipeline([('preprocessor', preprocessor), ('model', DecisionTreeRegressor())]),
-    'Random Forest Regression': Pipeline([('preprocessor', preprocessor), ('model', RandomForestRegressor())]),
-    'Support Vector Regression': Pipeline([('preprocessor', preprocessor), ('model', SVR())])
-}
+# Create a pipeline for data preprocessing and model fitting
+model_pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('model', DecisionTreeRegressor())
+])
 
-# Streamlit app starts here
-st.title('Crop Price Prediction')
-st.write('Website Created by Iftekhar Mahmud')
-st.markdown("Enter crop and location details to predict prices.")
+# Train the model for each commodity
+model_dict = {}
+for commodity in commodity_names:
+    # Filter data for the current commodity
+    commodity_data = data_cleaned_iqr[data_cleaned_iqr['Commodity Group'] == commodity]
 
-# Sidebar inputs for user selection
-commodity_name = st.sidebar.selectbox('Select Commodity', commodity_names)
-district = st.sidebar.selectbox('Select District', data['District'].unique())
-division = st.sidebar.selectbox('Select Division', data['Division'].unique())
-upazila = st.sidebar.selectbox('Select Upazila', data['Upazila'].unique())
+    # Define the target and predictors
+    X = commodity_data[predictors]
+    y = commodity_data[target]
 
-# User inputs for future prediction
-future_week = st.sidebar.number_input('Future Week (1-52)', min_value=1, max_value=52, value=1)
-future_year = st.sidebar.number_input('Future Year', min_value=data['Year'].min(), max_value=data['Year'].max() + 5, value=data['Year'].max())
+    # Split the data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Filter data for the selected commodity
-commodity_data = data_cleaned_iqr[data_cleaned_iqr['Commodity Group'] == commodity_name]
-
-# Define the target and predictors
-X = commodity_data[predictors]
-y = commodity_data[target]
-
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Loop through each model and fit, predict, and evaluate
-for name, model in models.items():
     # Fit the model
-    model.fit(X_train, y_train)
+    model_pipeline.fit(X_train, y_train)
+
+    # Store the model
+    model_dict[commodity] = model_pipeline
 
     # Predict on the test set
-    y_pred = model.predict(X_test)
+    y_pred = model_pipeline.predict(X_test)
 
     # Calculate metrics
     r2 = r2_score(y_test, y_pred)
     mse = mean_squared_error(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
 
-    # Display model metrics
-    st.write(f"{name}: R-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}")
+    print(f"{commodity} - Decision Tree Regression: R-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}")
 
-    # Plotting Actual vs Predicted within an expander
-    with st.expander(f"{name} - Actual vs Predicted Prices", expanded=False):
-        plt.figure(figsize=(8, 6))
-        plt.scatter(y_test, y_pred, color='blue')
-        plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')
-        plt.xlabel('Actual Prices')
-        plt.ylabel('Predicted Prices')
-        plt.title(f'{name} - Actual vs Predicted Prices\nR-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}')
-        plt.grid(True)
-        st.pyplot(plt)
+# Streamlit UI
+st.title("Crop Price Prediction App")
 
-# Forecasting for the future date
-if st.sidebar.button("Forecast Price"):
-    # Create a new DataFrame for the input features
+# User inputs
+selected_commodity = st.selectbox("Select Commodity:", commodity_names)
+
+# Get the corresponding model for the selected commodity
+selected_model = model_dict[selected_commodity]
+
+# User inputs for prediction
+selected_w_price = st.number_input('Enter Wheat Average Price:')
+selected_year = st.number_input('Enter Year:')
+selected_month = st.selectbox('Select Month:', data['Month'].unique())
+selected_week = st.number_input('Enter Week:')
+selected_division = st.selectbox('Select Division:', data['Division'].unique())
+selected_district = st.selectbox('Select District:', data['District'].unique())
+selected_upazila = st.selectbox('Select Upazila:', data['Upazila'].unique())
+selected_market_name = st.selectbox('Select Market Name:', data['Market Name'].unique())
+
+if st.button('Forecast Price'):
+    # Create a DataFrame for the future input
     future_data = pd.DataFrame({
-        'W Average Price': [data['W Average Price'].mean()],  # Replace with your own logic for future price
-        'Year': [future_year],
-        'Month': [future_week],  # Assuming weeks correlate directly to months for simplicity
-        'Week': [future_week],
-        'Division': [division],
-        'District': [district],
-        'Upazila': [upazila],
-        'Market Name': [data['Market Name'].mode()[0]]  # Replace with your own logic
+        'W Average Price': [selected_w_price],
+        'Year': [selected_year],
+        'Month': [selected_month],
+        'Week': [selected_week],
+        'Division': [selected_division],
+        'District': [selected_district],
+        'Upazila': [selected_upazila],
+        'Market Name': [selected_market_name]
     })
 
-    # Loop through each model to forecast
-    for name, model in models.items():
-        forecast_price = model.predict(future_data)
-        st.write(f"Forecasted Price for {commodity_name} in {future_year} (Week {future_week}): {forecast_price[0]:.2f} using {name}")
+    # Ensure the correct types for the DataFrame
+    future_data['W Average Price'] = pd.to_numeric(future_data['W Average Price'], errors='coerce')
+
+    # Predict
+    try:
+        forecast_price = selected_model.predict(future_data)
+        st.success(f"Forecasted Price: {forecast_price[0]:.2f}")
+    except Exception as e:
+        st.error(f"Error predicting price: {str(e)}")
+
+# Expander for displaying metrics and plots
+with st.expander("Model Metrics and Plots"):
+    # You can add plots or metrics relevant to the selected commodity here.
+    pass
