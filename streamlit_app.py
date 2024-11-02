@@ -129,6 +129,8 @@ selected_market_name = st.selectbox('Select Market Name:', markets)
 st.write(f"Selected Year: {selected_year}, Month: {selected_month}, Week: {selected_week}")
 
 if st.button('Forecast Price'):
+    ## Forecasting price button
+if st.button('Forecast Price'):
     # Create a DataFrame for the future input
     future_data = pd.DataFrame({
         'W Average Price': [float(selected_w_price)],  # Convert to float
@@ -141,16 +143,22 @@ if st.button('Forecast Price'):
         'Market Name': [selected_market_name]
     })
 
+    # Display future data for debugging
+    st.write("Future Data for Prediction:")
+    st.write(future_data)
+    st.write(future_data.dtypes)
+
     # Check for NaN values
     if future_data.isnull().any().any():
         st.error("Input data contains NaN values. Please check your inputs.")
     else:
-        # Predict
+        # Ensure the correct types for the DataFrame
         try:
             forecast_price = selected_model.predict(future_data)
             st.success(f"Forecasted Price: {forecast_price[0]:.2f}")
         except Exception as e:
             st.error(f"Error predicting price: {str(e)}")
+
 
 # Expander for displaying metrics and plots
 with st.expander("Model Metrics and Plots"):
