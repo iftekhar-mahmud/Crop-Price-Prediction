@@ -9,7 +9,6 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 import datetime
-from datetime import datetime as dt
 
 # Load the CSV data into a pandas DataFrame
 data = pd.read_csv('Data/Combined Dataset.csv')
@@ -110,10 +109,15 @@ selected_week = selected_date.isocalendar()[1]  # ISO week number
 
 # Input for Wheat Average Price
 selected_w_price = st.number_input('Enter Retail Average Price:', min_value=0.0, step=0.01)
-selected_division = st.selectbox('Select Division:', data['Division'].unique())
-selected_district = st.selectbox('Select District:', data['District'].unique())
-selected_upazila = st.selectbox('Select Upazila:', data['Upazila'].unique())
-selected_market_name = st.selectbox('Select Market Name:', data['Market Name'].unique())
+
+# Create cascading dropdowns for Division, District, Upazila, and Market Name
+division = st.selectbox('Select Division:', data['Division'].unique())
+districts = data[data['Division'] == division]['District'].unique()
+district = st.selectbox('Select District:', districts)
+upazilas = data[data['District'] == district]['Upazila'].unique()
+upazila = st.selectbox('Select Upazila:', upazilas)
+markets = data[data['Upazila'] == upazila]['Market Name'].unique()
+market_name = st.selectbox('Select Market Name:', markets)
 
 # Display selected values
 st.write(f"Selected Year: {selected_year}, Month: {selected_month}, Week: {selected_week}")
@@ -125,10 +129,10 @@ if st.button('Forecast Price'):
         'Year': [selected_year],
         'Month': [selected_month],
         'Week': [selected_week],
-        'Division': [selected_division],
-        'District': [selected_district],
-        'Upazila': [selected_upazila],
-        'Market Name': [selected_market_name]
+        'Division': [division],
+        'District': [district],
+        'Upazila': [upazila],
+        'Market Name': [market_name]
     })
 
     # Ensure the correct types for the DataFrame
