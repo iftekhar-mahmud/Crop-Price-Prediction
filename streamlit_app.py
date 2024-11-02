@@ -154,7 +154,8 @@ if st.button('Forecast Price'):
             'Division': [selected_division],
             'District': [selected_district],
             'Upazila': [selected_upazila],
-            'Market Name': [selected_market_name]
+            'Market Name': [selected_market_name],
+            'Commodity': [selected_commodity]
         })
 
         # Display future data for debugging
