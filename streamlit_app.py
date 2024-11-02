@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-
+import datetime
 # Load the CSV data into a pandas DataFrame
 data = pd.read_csv('Data/Combined Dataset.csv')
 
@@ -101,10 +101,11 @@ selected_commodity = st.selectbox("Select Commodity:", commodity_names)
 selected_model = model_dict[selected_commodity]
 
 # User inputs for prediction
-selected_w_price = st.number_input('Enter Average Price:')
-selected_year = st.number_input('Enter Year:')
+selected_w_price = st.number_input('Enter Wheat Average Price:', min_value=0.0, step=0.01)
+current_year = datetime.datetime.now().year
+selected_year = st.number_input('Enter Year:', value=current_year, min_value=2000, max_value=current_year)
 selected_month = st.selectbox('Select Month:', data['Month'].unique())
-selected_week = st.number_input('Enter Week:')
+selected_week = st.number_input('Enter Week:', min_value=1, max_value=52, value=1)  # Weeks range from 1 to 52
 selected_division = st.selectbox('Select Division:', data['Division'].unique())
 selected_district = st.selectbox('Select District:', data['District'].unique())
 selected_upazila = st.selectbox('Select Upazila:', data['Upazila'].unique())
