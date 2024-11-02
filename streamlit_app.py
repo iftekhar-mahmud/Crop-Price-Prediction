@@ -27,9 +27,9 @@ data['W Average Price'] = data['W Average Price'].str.replace(',', '')
 data['R Average Price'] = pd.to_numeric(data['R Average Price'], errors='coerce')
 data['W Average Price'] = pd.to_numeric(data['W Average Price'], errors='coerce')
 
-# Handle NaN values using interpolation
-data['R Average Price'].interpolate(method='linear', inplace=True)
-data['W Average Price'].interpolate(method='linear', inplace=True)
+data['R Average Price'] = data['R Average Price'].interpolate(method='linear')
+data['W Average Price'] = data['W Average Price'].interpolate(method='linear')
+
 
 # Get the unique commodity names
 commodity_names = data['Commodity Group'].unique()
