@@ -25,6 +25,7 @@ class CropDataPreprocessor:
 
     def load_data(self, path):
         data = pd.read_csv(path)
+        '''
         if self.commodity_name:
             data = data[data['Commodity Name'] == self.commodity_name]
         if self.district:
@@ -33,6 +34,7 @@ class CropDataPreprocessor:
             data = data[data['Division'] == self.division]
         if self.upazila:
             data = data[data['Upazila'] == self.upazila]
+            '''
         return data
 
 # Initialize map with folium and center on Bangladesh
