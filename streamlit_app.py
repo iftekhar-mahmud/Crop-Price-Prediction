@@ -36,7 +36,7 @@ data_cleaned_iqr = data[~((data.select_dtypes(include=np.number) < (Q1 - 1.5 * I
 
 # Streamlit UI
 st.title("Crop Price Prediction App")
-
+'''
 # Add About Us section in the sidebar
 st.sidebar.header("About Us")
 st.sidebar.write("""
@@ -49,6 +49,18 @@ st.sidebar.write("""
     - Md. Habibur Rahman, ID: 011201161
 
     
+""")
+'''
+
+st.header("About Us")
+st.write("""
+    This Crop Price Prediction App was developed by:
+    - Iftekhar Mahmud, ID: 011182073
+    - Puja Rani Das, ID: 011202007
+    - Sazzadur Rahman, ID: 011201020
+    - Md. Julker Nyne, ID: 011202023
+    - Soheli Tangila Richi, ID: 011202313
+    - Md. Habibur Rahman, ID: 011201161
 """)
 
 selected_commodity = st.selectbox("Select Commodity:", commodity_names)
