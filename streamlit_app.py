@@ -109,19 +109,21 @@ if st.button('Forecast Price'):
         if price_type == 'Retail':
             future_data['W Average Price'] = w_average_price
 
-        # Convert types explicitly
-        future_data['Year'] = future_data['Year'].astype(int)
-        future_data['Month'] = future_data['Month'].astype(int)
-        future_data['Week'] = future_data['Week'].astype(int)
+        st.write("Future Data for Prediction:")
+        st.write(future_data)
 
         # Check for NaN values
-        st.write(future_data.isnull().sum())
+        if future_data.isnull().values.any():
+            st.error("Error: Future data contains NaN values. Please check your inputs.")
+        else:
+            try:
+                forecast_price = selected_model.predict(future_data)
+                st.success(f"Forecasted {price_type} Price: {forecast_price[0]:.2f}")
+            except Exception as e:
+                st.error(f"Error predicting price: {str(e)}")
+    else:
+        st.error("No historical data found for the selected location and commodity.")
 
-        try:
-            forecast_price = selected_model.predict(future_data)
-            st.success(f"Forecasted {price_type} Price: {forecast_price[0]:.2f}")
-        except Exception as e:
-            st.error(f"Error predicting price: {str(e)}")
 
 
 # Geolocation fix for "Chattogram"
