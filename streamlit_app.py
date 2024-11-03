@@ -39,6 +39,9 @@ Q3 = data.select_dtypes(include=np.number).quantile(0.75)
 IQR = Q3 - Q1
 data_cleaned_iqr = data[~((data.select_dtypes(include=np.number) < (Q1 - 1.5 * IQR)) | (data.select_dtypes(include=np.number) > (Q3 + 1.5 * IQR))).any(axis=1)]
 
+# Streamlit UI
+st.title("Crop Price Prediction App")
+
 # Add option to choose Retail or Wholesale prediction
 price_type = st.selectbox("Predict Retail or Wholesale Price:", ["Retail", "Wholesale"])
 target = 'R Average Price' if price_type == "Retail" else 'W Average Price'
@@ -98,8 +101,7 @@ for commodity in commodity_names:
 
     print(f"{commodity} - Decision Tree Regression: R-squared = {r2:.3f}, MSE = {mse:.3f}, MAE = {mae:.3f}")
 
-# Streamlit UI
-st.title("Crop Price Prediction App")
+
 
 # User inputs
 selected_commodity = st.selectbox("Select Commodity:", commodity_names)
