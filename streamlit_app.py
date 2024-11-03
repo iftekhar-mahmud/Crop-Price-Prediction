@@ -120,9 +120,6 @@ if st.button('Forecast Price'):
         future_data['Month'] = future_data['Month'].astype(int)
         future_data['Week'] = future_data['Week'].astype(int)
 
-        # Convert to numeric for all necessary columns, including 'W Average Price'
-        future_data['W Average Price'] = pd.to_numeric(future_data['W Average Price'], errors='coerce')
-
         # Display future_data for debugging
         st.write("Future Data for Prediction:")
         st.write(future_data)
@@ -133,6 +130,10 @@ if st.button('Forecast Price'):
         if future_data.isnull().values.any():
             st.error("Error: Future data contains NaN values. Please check your inputs.")
         else:
+            # Inspect the types of all columns to catch any non-numeric types
+            for column in future_data.columns:
+                st.write(f"Column: {column}, Type: {type(future_data[column][0])}")
+
             try:
                 forecast_price = selected_model.predict(future_data)
                 st.success(f"Forecasted {price_type} Price: {forecast_price[0]:.2f}")
@@ -140,6 +141,7 @@ if st.button('Forecast Price'):
                 st.error(f"Error predicting price: {str(e)}")
     else:
         st.error("No historical data found for the selected location and commodity.")
+
 
 
 
