@@ -95,7 +95,8 @@ if st.button('Forecast Price'):
 
     if not historical_data.empty:
         w_average_price = historical_data['W Average Price'].mean()
-        
+        w_average_price = float(w_average_price)  # Ensure it's a float
+
         future_data = pd.DataFrame({
             'Year': [int(selected_year)],
             'Month': [int(selected_month)],
@@ -112,7 +113,7 @@ if st.button('Forecast Price'):
         st.write("Future Data for Prediction:")
         st.write(future_data)
 
-        # Check for NaN values
+        # Check for NaN values in future_data before prediction
         if future_data.isnull().values.any():
             st.error("Error: Future data contains NaN values. Please check your inputs.")
         else:
