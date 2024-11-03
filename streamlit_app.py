@@ -110,8 +110,16 @@ if st.button('Forecast Price'):
         if price_type == 'Retail':
             future_data['W Average Price'] = w_average_price
 
+        # Ensure proper data types
+        future_data['Year'] = future_data['Year'].astype(int)
+        future_data['Month'] = future_data['Month'].astype(int)
+        future_data['Week'] = future_data['Week'].astype(int)
+
+        # Display future_data for debugging
         st.write("Future Data for Prediction:")
         st.write(future_data)
+        st.write("Data types in future_data:")
+        st.write(future_data.dtypes)
 
         # Check for NaN values in future_data before prediction
         if future_data.isnull().values.any():
@@ -124,6 +132,7 @@ if st.button('Forecast Price'):
                 st.error(f"Error predicting price: {str(e)}")
     else:
         st.error("No historical data found for the selected location and commodity.")
+
 
 
 
