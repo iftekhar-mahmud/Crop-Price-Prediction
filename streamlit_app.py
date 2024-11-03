@@ -53,8 +53,13 @@ st.sidebar.write("""
 **Conference Paper**  
 1. **Publication Title:** “Predicting Crop Prices Using Machine Learning Algorithms for Sustainable Agriculture”  
    **Conference:** Accepted and presented at the IEEE Region 10 Symposium (TEN-SYMP 2024), Delhi Section, New Delhi, India.  
-   **Authors:** Iftekhar Mahmud, Puja Rani Das, Md. Habibur Rahman, Ahmed Rafi Hasan, Kamrul Islam Shahin, and Dewan Md. Farid.
+   **Authors:** Iftekhar Mahmud, Puja Rani Das, Md. Habibur Rahman, Ahmed Rafi Hasan, Kamrul Islam Shahin, and Dewan Md. Farid.  
+   **Affiliations:**  
+   - **Department of Computer Science and Engineering**, United International University, United City, Madani Avenue, Badda, Dhaka 1212, Bangladesh  
+   - **Software Engineering**, The Maersk Mc-Kinney Moller Institute, University of Southern Denmark, Campusvej 55, DK-5230 Odense M, Denmark  
+   **Email:** imahmud182073@bscse.uiu.ac.bd, pdas202007@bscse.uiu.ac.bd, mrahman201161@bscse.uiu.ac.bd, ahasan191131@bscse.uiu.ac.bd, kish@mmmi.sdu.dk, dewanfarid@cse.uiu.ac.bd
 """)
+
 
 
 
