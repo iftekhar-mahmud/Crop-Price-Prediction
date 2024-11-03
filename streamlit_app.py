@@ -119,7 +119,8 @@ if st.button('Forecast Price'):
 
 # Geolocation fix for "Chattogram"
 geolocator = Nominatim(user_agent="crop_price_predictor")
-division_input = "Chittagong" if selected_division == "Chattagram" else selected_division
+
+division_input = "Chittagong" if selected_division in ["Chattogram", "Chattagram"] else selected_division
 
 try:
     location = geolocator.geocode(f"{division_input}, {selected_district}, {selected_upazila}", exactly_one=True)
