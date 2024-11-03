@@ -11,7 +11,7 @@ from sklearn.pipeline import Pipeline
 import datetime
 from datetime import datetime as dt
 from geopy.geocoders import Nominatim
-
+import pydeck as pdk
 # Load the CSV data into a pandas DataFrame
 data = pd.read_csv('https://raw.githubusercontent.com/iftekhar-mahmud/Crop-Price-Prediction/refs/heads/master/Data/CombinedDataset.csv')
 
@@ -154,3 +154,42 @@ if st.button('Forecast Price'):
             st.error(f"Error predicting price: {str(e)}")
     else:
         st.error("No historical data found for the selected location and commodity.")
+
+# Geolocation
+try:
+    location = geolocator.geocode(f"{selected_division}, {selected_district}, {selected_upazila}", exactly_one=True)
+    
+    if location:
+        # Verify coordinates
+        st.write(f"Latitude: {location.latitude}, Longitude: {location.longitude}")
+        
+        # Prepare data for pydeck
+        df_location = pd.DataFrame({'lat': [location.latitude], 'lon': [location.longitude]})
+
+        # Create a map layer
+        layer = pdk.Layer(
+            'ScatterplotLayer',
+            df_location,
+            get_position='[lon, lat]',
+            get_color='[200, 30, 0, 160]',
+            get_radius=500,
+        )
+
+        # Set up the map view
+        view_state = pdk.ViewState(
+            longitude=location.longitude,
+            latitude=location.latitude,
+            zoom=11,
+            pitch=50,
+        )
+
+        # Display the map
+        st.pydeck_chart(pdk.Deck(
+            layers=[layer],
+            initial_view_state=view_state,
+        ))
+    else:
+        st.error("Location could not be found. Please check your inputs.")
+
+except Exception as e:
+    st.error(f"Error occurred while fetching location: {str(e)}")
