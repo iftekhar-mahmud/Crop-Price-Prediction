@@ -107,10 +107,12 @@ if st.button('Forecast Price'):
 
         # Calculate and assign W Average Price
         if price_type == 'Retail':
-            w_average_price = historical_data['W Average Price'].mean() if not historical_data['W Average Price'].isnull().all() else 0
-            future_data['W Average Price'] = float(w_average_price)
+            if historical_data['W Average Price'].isnull().any():
+                st.warning("Historical W Average Price has NaN values. Using mean of available prices.")
+            w_average_price = historical_data['W Average Price'].mean()
+            future_data['W Average Price'] = float(w_average_price) if not pd.isna(w_average_price) else 0.0
         else:  # For wholesale
-            future_data['W Average Price'] = 0  # Default for wholesale
+            future_data['W Average Price'] = 0.0  # Default for wholesale
 
         # Ensure correct data types
         future_data['Year'] = future_data['Year'].astype(int)
@@ -136,8 +138,9 @@ if st.button('Forecast Price'):
 
                 # Inspect the types of all columns to catch any non-numeric types
                 for column in prediction_input.columns:
-                    st.write(f"Column: {column}, Type: {type(prediction_input[column][0])}")
+                    st.write(f"Column: {column}, Type: {prediction_input[column].dtype}")
 
+                # Make prediction
                 forecast_price = selected_model.predict(prediction_input)
                 st.success(f"Forecasted {price_type} Price: {forecast_price[0]:.2f}")
             except Exception as e:
