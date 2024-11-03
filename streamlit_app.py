@@ -41,12 +41,12 @@ st.title("Crop Price Prediction App")
 st.sidebar.header("About Us")
 st.sidebar.write("""
     This Crop Price Prediction App was developed by:
-    - Iftekhar Mahmud, ID: 011182073
-    - Puja Rani Das, ID: 011202007
-    - Sazzadur Rahman, ID: 011201020
-    - Md. Julker Nyne, ID: 011202023
-    - Soheli Tangila Richi, ID: 011202313
-    - Md. Habibur Rahman, ID: 011201161
+    - Iftekhar Mahmud
+    - Puja Rani Das
+    - Sazzadur Rahman
+    - Md. Julker Nyne
+    - Soheli Tangila Richi
+    - Md. Habibur Rahman
 """)
 st.sidebar.header("Publication List")
 st.sidebar.write("""
