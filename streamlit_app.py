@@ -48,6 +48,14 @@ st.sidebar.write("""
     - Soheli Tangila Richi, ID: 011202313
     - Md. Habibur Rahman, ID: 011201161
 """)
+st.sidebar.header("Publication List")
+st.sidebar.write("""
+**Conference Paper**  
+1. **Publication Title:** “Predicting Crop Prices Using Machine Learning Algorithms for Sustainable Agriculture”  
+   **Conference:** Accepted and presented at the IEEE Region 10 Symposium (TEN-SYMP 2024), Delhi Section, New Delhi, India.  
+   **Authors:** Iftekhar Mahmud, Puja Rani Das, Md. Habibur Rahman, Ahmed Rafi Hasan, Kamrul Islam Shahin, and Dewan Md. Farid.
+""")
+
 
 
 
