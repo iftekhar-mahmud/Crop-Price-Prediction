@@ -96,7 +96,7 @@ if st.button('Forecast Price'):
     if not historical_data.empty:
         w_average_price = historical_data['W Average Price'].mean()
         
-        future_data = pd.DataFrame({
+            future_data = pd.DataFrame({
             'Year': [int(selected_year)],
             'Month': [int(selected_month)],
             'Week': [int(selected_week)],
@@ -109,13 +109,20 @@ if st.button('Forecast Price'):
         if price_type == 'Retail':
             future_data['W Average Price'] = w_average_price
 
+        # Convert types explicitly
+        future_data['Year'] = future_data['Year'].astype(int)
+        future_data['Month'] = future_data['Month'].astype(int)
+        future_data['Week'] = future_data['Week'].astype(int)
+
+        # Check for NaN values
+        st.write(future_data.isnull().sum())
+
         try:
             forecast_price = selected_model.predict(future_data)
             st.success(f"Forecasted {price_type} Price: {forecast_price[0]:.2f}")
         except Exception as e:
             st.error(f"Error predicting price: {str(e)}")
-    else:
-        st.error("No historical data found for the selected location and commodity.")
+
 
 # Geolocation fix for "Chattogram"
 geolocator = Nominatim(user_agent="crop_price_predictor")
