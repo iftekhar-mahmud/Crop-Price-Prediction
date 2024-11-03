@@ -94,9 +94,11 @@ if st.button('Forecast Price'):
     ]
 
     if not historical_data.empty:
-        w_average_price = historical_data['W Average Price'].mean()
-        w_average_price = float(w_average_price)  # Ensure it's a float
+        # Calculate the average price for wholesale or retail
+        w_average_price = historical_data['W Average Price'].mean() if price_type == 'Retail' else None
+        w_average_price = float(w_average_price) if w_average_price is not None else 0  # Ensure it's a float
 
+        # Create future_data DataFrame
         future_data = pd.DataFrame({
             'Year': [int(selected_year)],
             'Month': [int(selected_month)],
@@ -107,15 +109,18 @@ if st.button('Forecast Price'):
             'Market Name': [selected_market_name]
         })
 
+        # Add 'W Average Price' for retail prediction
         if price_type == 'Retail':
             future_data['W Average Price'] = w_average_price
+        else:
+            future_data['W Average Price'] = 0  # Add this line to prevent KeyError in wholesale
 
-        # Ensure proper data types
+        # Ensure correct data types
         future_data['Year'] = future_data['Year'].astype(int)
         future_data['Month'] = future_data['Month'].astype(int)
         future_data['Week'] = future_data['Week'].astype(int)
 
-        # Convert to numeric (forcing to NaN if conversion fails)
+        # Convert to numeric for all necessary columns, including 'W Average Price'
         future_data['W Average Price'] = pd.to_numeric(future_data['W Average Price'], errors='coerce')
 
         # Display future_data for debugging
@@ -135,6 +140,7 @@ if st.button('Forecast Price'):
                 st.error(f"Error predicting price: {str(e)}")
     else:
         st.error("No historical data found for the selected location and commodity.")
+
 
 
 
