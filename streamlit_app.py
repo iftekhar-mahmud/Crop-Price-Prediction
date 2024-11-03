@@ -115,6 +115,9 @@ if st.button('Forecast Price'):
         future_data['Month'] = future_data['Month'].astype(int)
         future_data['Week'] = future_data['Week'].astype(int)
 
+        # Convert to numeric (forcing to NaN if conversion fails)
+        future_data['W Average Price'] = pd.to_numeric(future_data['W Average Price'], errors='coerce')
+
         # Display future_data for debugging
         st.write("Future Data for Prediction:")
         st.write(future_data)
@@ -132,6 +135,7 @@ if st.button('Forecast Price'):
                 st.error(f"Error predicting price: {str(e)}")
     else:
         st.error("No historical data found for the selected location and commodity.")
+
 
 
 
