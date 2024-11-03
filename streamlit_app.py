@@ -15,7 +15,7 @@ from geopy.geocoders import Nominatim
 # Load the CSV data into a pandas DataFrame
 data = pd.read_csv('https://raw.githubusercontent.com/iftekhar-mahmud/Crop-Price-Prediction/refs/heads/master/Data/CombinedDataset.csv')
 
-# Preprocess the data (e.g., handle missing values, encode categorical variables)
+# Preprocess the data
 data = data.dropna()
 data.dropna(subset=['R Average Price', 'W Average Price'], inplace=True)
 
@@ -30,7 +30,6 @@ data['W Average Price'] = pd.to_numeric(data['W Average Price'], errors='coerce'
 data['R Average Price'] = data['R Average Price'].interpolate(method='linear')
 data['W Average Price'] = data['W Average Price'].interpolate(method='linear')
 
-
 # Get the unique commodity names
 commodity_names = data['Commodity Group'].unique()
 
@@ -40,9 +39,16 @@ Q3 = data.select_dtypes(include=np.number).quantile(0.75)
 IQR = Q3 - Q1
 data_cleaned_iqr = data[~((data.select_dtypes(include=np.number) < (Q1 - 1.5 * IQR)) | (data.select_dtypes(include=np.number) > (Q3 + 1.5 * IQR))).any(axis=1)]
 
-# Define the target variable and predictor variables
-target = 'R Average Price'
-predictors = ['W Average Price', 'Year', 'Month', 'Week', 'Division', 'District', 'Upazila', 'Market Name']
+# Add option to choose Retail or Wholesale prediction
+price_type = st.selectbox("Predict Retail or Wholesale Price:", ["Retail", "Wholesale"])
+target = 'R Average Price' if price_type == "Retail" else 'W Average Price'
+
+# Define predictors, excluding the target variable if it's not relevant
+predictors = ['Year', 'Month', 'Week', 'Division', 'District', 'Upazila', 'Market Name']
+if price_type == "Retail":
+    predictors.append('W Average Price')
+else:
+    predictors.append('R Average Price')
 
 # Encode categorical variables
 categorical_cols = ['Month', 'Division', 'District', 'Upazila', 'Market Name']
@@ -105,29 +111,21 @@ selected_model = model_dict[selected_commodity]
 selected_date = st.date_input("Select Date:", value=datetime.date.today())
 selected_year = selected_date.year
 selected_month = selected_date.month
-selected_week = selected_date.isocalendar()[1]  # ISO week number
-
-# Ensure initial selection to avoid KeyErrors
-selected_r_price = st.number_input('Enter Retail Average Price:', min_value=0.0, step=0.01)
+selected_week = selected_date.isocalendar()[1]
 
 # Division selection
 selected_division = st.selectbox('Select Division:', data['Division'].unique())
-
-# District selection based on selected Division
 districts = data[data['Division'] == selected_division]['District'].unique()
 selected_district = st.selectbox('Select District:', districts)
 
-# Upazila selection based on selected District
 upazilas = data[data['District'] == selected_district]['Upazila'].unique()
 selected_upazila = st.selectbox('Select Upazila:', upazilas)
 
-# Market Name selection based on selected Upazila
 markets = data[data['Upazila'] == selected_upazila]['Market Name'].unique()
 selected_market_name = st.selectbox('Select Market Name:', markets)
 
 # Display selected values
 st.write(f"Selected Year: {selected_year}, Month: {selected_month}, Week: {selected_week}")
-
 
 if st.button('Forecast Price'):
     # Filter the dataset based on user inputs
@@ -138,16 +136,10 @@ if st.button('Forecast Price'):
         (data_cleaned_iqr['Upazila'] == selected_upazila)
     ]
     
-    # Check if there's enough historical data
     if not historical_data.empty:
-        # Calculate the most recent 'W Average Price'
-        w_average_price = historical_data['W Average Price'].mean()  # Average over the filtered data
-        # Alternatively, you could take the most recent price
-        # w_average_price = historical_data['W Average Price'].iloc[-1] 
+        w_average_price = historical_data['W Average Price'].mean() if price_type == "Retail" else historical_data['R Average Price'].mean()
         
-        # Create a DataFrame for future input
         future_data = pd.DataFrame({
-            'W Average Price': [w_average_price],
             'Year': [int(selected_year)],
             'Month': [int(selected_month)],
             'Week': [int(selected_week)],
@@ -155,14 +147,9 @@ if st.button('Forecast Price'):
             'District': [selected_district],
             'Upazila': [selected_upazila],
             'Market Name': [selected_market_name],
-            'Commodity': [selected_commodity]
+            'W Average Price' if price_type == "Retail" else 'R Average Price': [w_average_price]
         })
 
-        # Display future data for debugging
-        st.write("Future Data for Prediction:")
-        st.write(future_data)
-
-        # Prediction logic remains unchanged
         try:
             forecast_price = selected_model.predict(future_data)
             st.success(f"Forecasted Price: {forecast_price[0]:.2f}")
@@ -170,25 +157,3 @@ if st.button('Forecast Price'):
             st.error(f"Error predicting price: {str(e)}")
     else:
         st.error("No historical data found for the selected location and commodity.")
-
-
-
-
-# Expander for displaying metrics and plots
-with st.expander("Model Metrics and Plots"):
-    # You can add plots or metrics relevant to the selected commodity here.
-    pass
-
-
-# Initialize geolocator
-geolocator = Nominatim(user_agent="crop_price_prediction_app")
-
-# Geolocation
-try:
-    location = geolocator.geocode(f"{selected_division}, {selected_district}, {selected_upazila}", exactly_one=True)
-    if location:
-        st.map(pd.DataFrame({'lat': [location.latitude], 'lon': [location.longitude]}))
-    else:
-        st.error("Location could not be found. Please check your inputs.")
-except Exception as e:
-    st.error(f"Error occurred while fetching location: {str(e)}")
