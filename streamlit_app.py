@@ -94,11 +94,6 @@ if st.button('Forecast Price'):
     ]
 
     if not historical_data.empty:
-        # Calculate the average price for wholesale or retail
-        w_average_price = historical_data['W Average Price'].mean() if price_type == 'Retail' else None
-        if w_average_price is not None:
-            w_average_price = float(w_average_price)  # Ensure it's a float
-
         # Create future_data DataFrame
         future_data = pd.DataFrame({
             'Year': [int(selected_year)],
@@ -110,10 +105,11 @@ if st.button('Forecast Price'):
             'Market Name': [selected_market_name]
         })
 
-        # Add 'W Average Price' for retail prediction
+        # Calculate and assign W Average Price
         if price_type == 'Retail':
-            future_data['W Average Price'] = w_average_price
-        else:
+            w_average_price = historical_data['W Average Price'].mean() if not historical_data['W Average Price'].isnull().all() else 0
+            future_data['W Average Price'] = float(w_average_price)
+        else:  # For wholesale
             future_data['W Average Price'] = 0  # Default for wholesale
 
         # Ensure correct data types
