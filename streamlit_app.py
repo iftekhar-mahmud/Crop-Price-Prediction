@@ -96,7 +96,7 @@ if st.button('Forecast Price'):
     if not historical_data.empty:
         w_average_price = historical_data['W Average Price'].mean()
         
-            future_data = pd.DataFrame({
+        future_data = pd.DataFrame({
             'Year': [int(selected_year)],
             'Month': [int(selected_month)],
             'Week': [int(selected_week)],
