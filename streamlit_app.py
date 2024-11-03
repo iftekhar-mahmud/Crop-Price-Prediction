@@ -96,7 +96,8 @@ if st.button('Forecast Price'):
     if not historical_data.empty:
         # Calculate the average price for wholesale or retail
         w_average_price = historical_data['W Average Price'].mean() if price_type == 'Retail' else None
-        w_average_price = float(w_average_price) if w_average_price is not None else 0  # Ensure it's a float
+        if w_average_price is not None:
+            w_average_price = float(w_average_price)  # Ensure it's a float
 
         # Create future_data DataFrame
         future_data = pd.DataFrame({
@@ -113,12 +114,13 @@ if st.button('Forecast Price'):
         if price_type == 'Retail':
             future_data['W Average Price'] = w_average_price
         else:
-            future_data['W Average Price'] = 0  # Add this line to prevent KeyError in wholesale
+            future_data['W Average Price'] = 0  # Default for wholesale
 
         # Ensure correct data types
         future_data['Year'] = future_data['Year'].astype(int)
         future_data['Month'] = future_data['Month'].astype(int)
         future_data['Week'] = future_data['Week'].astype(int)
+        future_data['W Average Price'] = future_data['W Average Price'].astype(float)  # Ensure this is float
 
         # Display future_data for debugging
         st.write("Future Data for Prediction:")
@@ -130,17 +132,23 @@ if st.button('Forecast Price'):
         if future_data.isnull().values.any():
             st.error("Error: Future data contains NaN values. Please check your inputs.")
         else:
-            # Inspect the types of all columns to catch any non-numeric types
-            for column in future_data.columns:
-                st.write(f"Column: {column}, Type: {type(future_data[column][0])}")
-
             try:
-                forecast_price = selected_model.predict(future_data)
+                # Ensure correct input shape and type
+                prediction_input = future_data.drop(columns=['W Average Price'], errors='ignore')
+                st.write("Prediction Input:")
+                st.write(prediction_input)
+
+                # Inspect the types of all columns to catch any non-numeric types
+                for column in prediction_input.columns:
+                    st.write(f"Column: {column}, Type: {type(prediction_input[column][0])}")
+
+                forecast_price = selected_model.predict(prediction_input)
                 st.success(f"Forecasted {price_type} Price: {forecast_price[0]:.2f}")
             except Exception as e:
                 st.error(f"Error predicting price: {str(e)}")
     else:
         st.error("No historical data found for the selected location and commodity.")
+
 
 
 
