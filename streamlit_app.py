@@ -33,17 +33,31 @@ data_cleaned_iqr = data[~((data.select_dtypes(include=np.number) < (Q1 - 1.5 * I
                           (data.select_dtypes(include=np.number) > (Q3 + 1.5 * IQR))).any(axis=1)]
 
 # UI
+# UI
 st.title("Crop Price Prediction App")
 
-st.sidebar.header("About Us")
+st.sidebar.header("About Me")
+st.sidebar.write("""**Iftekhar Mahmud**
+                 https://iftekhar-mahmud.github.io/""")
+st.sidebar.header("Publications")
 st.sidebar.write("""
-This Crop Price Prediction App was developed by:
-- Iftekhar Mahmud
-- Puja Rani Das
-- Sazzadur Rahman
-- Md. Julker Nyne
-- Soheli Tangila Richi
-- Md. Habibur Rahman
+**1. Crop Price Prediction**
+
+I. Mahmud, P. R. Das, M. H. Rahman, A. R. Hasan, K. I. Shahin, and D. M. Farid,  
+"Predicting Crop Prices using Machine Learning Algorithms for Sustainable Agriculture,"  
+2024 IEEE Region 10 Symposium (TENSYMP), New Delhi, India, 2024, pp. 1–6.  
+[DOI: 10.1109/TENSYMP61132.2024.10752263](https://doi.org/10.1109/TENSYMP61132.2024.10752263)
+
+---
+
+**2. Multimodal Emotion Recognition**
+
+I. Mahmud, P. Das, N. Rifa, I. Hossain, R. Rahman, and D. M. Farid,  
+"Multimodal Emotion Recognition Using Visual and Thermal Image Fusion: A Deep Learning Approach,"  
+27th International Conference on Computer and Information Technology (ICCIT), 2024.  
+[DOI: 10.1109/ICCIT64611.2024.11022356](https://doi.org/10.1109/ICCIT64611.2024.11022356)
+
+**Award:** Best Technical Presentation Award, IEEE ICCIT 2024
 """)
 
 selected_commodity = st.selectbox("Select Commodity:", commodity_names)
@@ -73,9 +87,29 @@ model_pipeline = Pipeline([
 model_dict = {}
 predictors_dict = {}
 for commodity in commodity_names:
+    # Define predictors for this commodity
+    predictors = ['Year', 'Month', 'Week', 'Division', 'District', 'Upazila', 'Market Name']
+    if price_type == 'Retail':
+        predictors.insert(0, 'W Average Price')
+    predictors_dict[commodity] = predictors
+
+    # Prepare data
     commodity_data = data_cleaned_iqr[data_cleaned_iqr['Commodity Group'] == commodity]
     X = commodity_data[predictors]
     y = commodity_data[target]
+
+    # Build a new pipeline for each commodity
+    categorical_transformer = OneHotEncoder(handle_unknown='ignore')
+    numeric_transformer = 'passthrough'
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('cat', categorical_transformer, ['Month', 'Division', 'District', 'Upazila', 'Market Name']),
+            ('num', numeric_transformer, [col for col in predictors if col not in ['Month', 'Division', 'District', 'Upazila', 'Market Name']])
+        ])
+    model_pipeline = Pipeline([
+        ('preprocessor', preprocessor),
+        ('model', DecisionTreeRegressor())
+    ])
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     model_pipeline.fit(X_train, y_train)
     model_dict[commodity] = model_pipeline
@@ -128,6 +162,20 @@ if st.button('Forecast Price'):
 
         # Ensure column order matches training
         future_data = future_data[selected_predictors]
+
+        # Ensure correct dtypes for numeric columns
+        numeric_cols = ['Year', 'Month', 'Week']
+        if 'W Average Price' in future_data.columns:
+            numeric_cols.append('W Average Price')
+        for col in numeric_cols:
+            if col in future_data.columns:
+                future_data[col] = pd.to_numeric(future_data[col], errors='coerce')
+
+        # Ensure correct dtypes for categorical columns
+        categorical_cols = ['Month', 'Division', 'District', 'Upazila', 'Market Name']
+        for col in categorical_cols:
+            if col in future_data.columns:
+                future_data[col] = future_data[col].astype(str)
 
         # Debug
         st.write("Future Data for Prediction:")
