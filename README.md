@@ -25,7 +25,20 @@ Try it live here:
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://croppriceprediction.streamlit.app/)
 
 ---
+## ⚙️ App Settings (Theme & Layout)
 
+You can customize how the app looks and feels using Streamlit’s settings menu:
+
+1. Click the **⋮** (three dots) menu in the top-right corner of the app.
+2. Go to **Settings**.
+3. Choose your preferred **Theme**:
+   - **System** (matches your OS theme)
+   - **Light**
+   - **Dark**
+   - **Custom**
+4. Toggle **Wide mode** for a more spacious layout.
+
+---
 ## Installation & Usage
 
 ```bash
