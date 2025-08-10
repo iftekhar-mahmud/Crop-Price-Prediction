@@ -13,7 +13,7 @@ from geopy.geocoders import Nominatim
 import pydeck as pdk
 
 # Load CSV data
-data = pd.read_csv('https://raw.githubusercontent.com/iftekhar-mahmud/Crop-Price-Prediction/refs/heads/master/Data/CombinedDataset.csv')
+data = pd.read_csv('https://raw.githubusercontent.com/iftekhar-mahmud/Crop-Price-Prediction/refs/heads/master/Data/Updated Combined Dataset.csv')
 
 # Clean & preprocess
 data = data.dropna()
