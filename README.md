@@ -1,10 +1,15 @@
-# Crop Price Prediction App
+# 📦 Crop Price Prediction App
 
 A web application for forecasting retail and wholesale crop prices based on historical market data from different regions in Bangladesh.  
 Built with Streamlit, scikit-learn, and geospatial visualization using PyDeck.
 
 ---
+## Disclaimer
 
+If the app has been inactive for a while, Streamlit may put it to sleep.  
+If you see a **red button** that says **"Wake the app up"**, please click it — the app will restart in a few seconds.
+
+---
 ## Features
 
 - Predict retail and wholesale prices for various commodities
@@ -28,9 +33,3 @@ git clone https://github.com/iftekhar-mahmud/Crop-Price-Prediction.git
 cd Crop-Price-Prediction
 pip install -r requirements.txt
 streamlit run streamlit_app.py
-```
-
-
-
-
-
