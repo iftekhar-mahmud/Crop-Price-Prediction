@@ -178,10 +178,10 @@ if st.button('Forecast Price'):
                 future_data[col] = future_data[col].astype(str)
 
         # Debug
-        st.write("Future Data for Prediction:")
-        st.write(future_data)
-        st.write("Data types in future_data:")
-        st.write(future_data.dtypes)
+        #st.write("Future Data for Prediction:")
+        #st.write(future_data)
+        #st.write("Data types in future_data:")
+        #st.write(future_data.dtypes)
 
         try:
             forecast_price = selected_model.predict(future_data)
