@@ -20,7 +20,7 @@ data = pd.read_csv('https://raw.githubusercontent.com/iftekhar-mahmud/Crop-Price
 data = data.dropna()
 data.dropna(subset=['R Average Price', 'W Average Price'], inplace=True)
 data['R Average Price'] = pd.to_numeric(data['R Average Price'].str.replace(',', ''), errors='coerce')
-data['W Average Price'] = pd.to_numeric(data['W Average Price'].str.replace(',', ''), errors='coerce')
+data['W Average Price'] = pd.to_numeric(data['W Average Price'], errors='coerce')
 data['R Average Price'] = data['R Average Price'].interpolate(method='linear')
 data['W Average Price'] = data['W Average Price'].interpolate(method='linear')
 
